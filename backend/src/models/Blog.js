@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import slugify from "slugify";
 
 const blogSchema = new mongoose.Schema(
   {
@@ -17,15 +16,9 @@ const blogSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    metaTitle: {
-      type: String
-    },
-    metaDescription: {
-      type: String
-    },
-    featuredImage: {
-      type: String
-    },
+    metaTitle: String,
+    metaDescription: String,
+    featuredImage: String,
     status: {
       type: String,
       enum: ["draft", "published"],
@@ -34,13 +27,5 @@ const blogSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Auto-generate slug
-blogSchema.pre("save", function (next) {
-  if (!this.slug) {
-    this.slug = slugify(this.title, { lower: true });
-  }
-  next();
-});
 
 export default mongoose.model("Blog", blogSchema);

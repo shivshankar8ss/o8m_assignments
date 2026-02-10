@@ -1,16 +1,23 @@
 import Blog from "../models/Blog.js";
+import slugify from "slugify";
 
-// CREATE blog (CMS)
+// CREATE blog
 export const createBlog = async (req, res) => {
   try {
-    const blog = await Blog.create(req.body);
+    const slug = slugify(req.body.title, { lower: true });
+
+    const blog = await Blog.create({
+      ...req.body,
+      slug
+    });
+
     res.status(201).json(blog);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// GET published blogs (listing page)
+// GET published blogs
 export const getPublishedBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find({ status: "published" })
@@ -22,7 +29,7 @@ export const getPublishedBlogs = async (req, res) => {
   }
 };
 
-// GET blog by slug (SEO page)
+// GET blog by slug
 export const getBlogBySlug = async (req, res) => {
   try {
     const blog = await Blog.findOne({
@@ -48,6 +55,7 @@ export const updateBlog = async (req, res) => {
       req.body,
       { new: true }
     );
+
     res.status(200).json(blog);
   } catch (error) {
     res.status(400).json({ message: error.message });
