@@ -2,67 +2,74 @@ import { useEffect, useState } from "react";
 import { fetchHeroes } from "../../api/hero.api";
 
 const Hero = () => {
-  const [heroes, setHeroes] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [sections, setSections] = useState([]);
+  const [active, setActive] = useState(0);
 
   useEffect(() => {
-    fetchHeroes()
-      .then((data) => {
-        setHeroes(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+    fetchHeroes().then((data) => {
+      const sorted = data.sort((a, b) => a.priority - b.priority);
+      setSections(sorted);
+    });
   }, []);
 
-  // auto slide every 4 seconds
-  useEffect(() => {
-    if (!heroes.length) return;
+  if (!sections.length) return null;
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) =>
-        prev === heroes.length - 1 ? 0 : prev + 1
-      );
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [heroes]);
-
-  if (loading) return <p>Loading hero...</p>;
-  if (!heroes.length) return null;
-
-  const hero = heroes[currentIndex];
+  const current = sections[active];
 
   return (
-    <section style={{ padding: "60px", background: "#f5f5f5" }}>
-      <h1>{hero.title}</h1>
-      <p>{hero.description}</p>
+    <section className="relative min-h-screen bg-black text-white flex">
+      
+      {/* LEFT CONTENT */}
+      <div className="flex-1 px-12 py-32 z-10">
+        <h1 className="text-6xl font-semibold leading-tight max-w-3xl">
+          {current.title}
+        </h1>
 
-      {hero.ctaText && (
-        <a href={hero.ctaLink}>
-          <button>{hero.ctaText}</button>
-        </a>
-      )}
+        <p className="mt-6 text-lg text-gray-300 max-w-xl">
+          {current.description}
+        </p>
 
-      <div style={{ marginTop: "20px" }}>
-        {heroes.map((_, index) => (
+        {current.ctaText && (
+          <button className="mt-10 px-10 py-4 bg-white text-black font-medium">
+            {current.ctaText}
+          </button>
+        )}
+      </div>
+
+      {/* RIGHT SECTIONS */}
+      <div className="hidden lg:flex w-[420px] h-screen">
+        {sections.map((sec, index) => (
           <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            style={{
-              margin: "0 5px",
-              background:
-                index === currentIndex ? "black" : "gray",
-              color: "white"
-            }}
+            key={sec._id}
+            onClick={() => setActive(index)}
+            className={`
+              flex-1
+              flex
+              items-center
+              justify-center
+              transition-all
+              duration-300
+              ${
+                index === active
+                  ? "bg-white text-black"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              }
+            `}
           >
-            {index + 1}
+            <span className="rotate-90 text-lg font-medium tracking-wide">
+              {sec.sectionLabel || `Section ${index + 1}`}
+            </span>
           </button>
         ))}
       </div>
+
+      {/* BACKGROUND IMAGE */}
+      {current.mediaUrl && (
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30"
+          style={{ backgroundImage: `url(${current.mediaUrl})` }}
+        />
+      )}
     </section>
   );
 };
