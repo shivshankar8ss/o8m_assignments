@@ -1,52 +1,52 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
-import { fetchBlogBySlug } from "../api/blog.api.js";
+import { fetchBlogBySlug } from "../api/blog.api";
 
 const BlogDetail = () => {
   const { slug } = useParams();
   const [blog, setBlog] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBlogBySlug(slug)
-      .then((data) => {
-        setBlog(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+    fetchBlogBySlug(slug).then((data) => {
+      setBlog(data);
+    });
   }, [slug]);
 
-  if (loading) return <p>Loading blog...</p>;
-  if (!blog) return <p>Blog not found</p>;
+  if (!blog) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading article...
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Helmet>
-        <title>{blog.metaTitle || blog.title}</title>
-        <meta
-          name="description"
-          content={blog.metaDescription}
-        />
-        <link
-          rel="canonical"
-          href={`http://localhost:5173/blog/${blog.slug}`}
-        />
-      </Helmet>
+    <article className="bg-white min-h-screen py-20">
+      <div className="max-w-4xl mx-auto px-6">
 
-      <article>
-        <h1>{blog.title}</h1>
+        {/* Title */}
+        <h1 className="text-4xl md:text-5xl font-semibold text-gray-900 leading-tight">
+          {blog.title}
+        </h1>
 
+        {/* Meta description */}
+        {blog.metaDescription && (
+          <p className="mt-6 text-lg text-gray-600">
+            {blog.metaDescription}
+          </p>
+        )}
+
+        {/* Divider */}
+        <div className="my-10 border-t border-gray-200"></div>
+
+        {/* Blog Content */}
         <div
-          dangerouslySetInnerHTML={{
-            __html: blog.content
-          }}
+          className="prose prose-lg max-w-none text-gray-800"
+          dangerouslySetInnerHTML={{ __html: blog.content }}
         />
-      </article>
-    </>
+
+      </div>
+    </article>
   );
 };
 

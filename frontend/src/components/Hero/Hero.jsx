@@ -5,22 +5,46 @@ const Hero = () => {
   const [sections, setSections] = useState([]);
   const [active, setActive] = useState(0);
 
+  // 1️⃣ Fetch hero sections
   useEffect(() => {
     fetchHeroes().then((data) => {
-      const sorted = data.sort((a, b) => a.priority - b.priority);
+      const sorted = [...data].sort(
+        (a, b) => a.priority - b.priority
+      );
       setSections(sorted);
     });
   }, []);
+
+  // 2️⃣ Auto-rotate sections every 4 seconds
+  useEffect(() => {
+    if (!sections.length) return;
+
+    const interval = setInterval(() => {
+      setActive((prev) =>
+        prev === sections.length - 1 ? 0 : prev + 1
+      );
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [sections]);
 
   if (!sections.length) return null;
 
   const current = sections[active];
 
   return (
-    <section className="relative min-h-screen bg-black text-white flex">
+    <section className="relative min-h-screen bg-black text-white flex overflow-hidden">
       
+      {/* BACKGROUND IMAGE */}
+      {current.mediaUrl && (
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30"
+          style={{ backgroundImage: `url(${current.mediaUrl})` }}
+        />
+      )}
+
       {/* LEFT CONTENT */}
-      <div className="flex-1 px-12 py-32 z-10">
+      <div className="relative z-10 flex-1 px-12 py-32">
         <h1 className="text-6xl font-semibold leading-tight max-w-3xl">
           {current.title}
         </h1>
@@ -36,19 +60,13 @@ const Hero = () => {
         )}
       </div>
 
-      {/* RIGHT SECTIONS */}
-      <div className="hidden lg:flex w-[420px] h-screen">
+      {/* RIGHT VERTICAL SECTIONS */}
+      <div className="hidden lg:flex w-[420px] h-screen relative z-10">
         {sections.map((sec, index) => (
           <button
             key={sec._id}
             onClick={() => setActive(index)}
-            className={`
-              flex-1
-              flex
-              items-center
-              justify-center
-              transition-all
-              duration-300
+            className={`flex-1 flex items-center justify-center transition-all duration-300
               ${
                 index === active
                   ? "bg-white text-black"
@@ -62,14 +80,6 @@ const Hero = () => {
           </button>
         ))}
       </div>
-
-      {/* BACKGROUND IMAGE */}
-      {current.mediaUrl && (
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{ backgroundImage: `url(${current.mediaUrl})` }}
-        />
-      )}
     </section>
   );
 };
